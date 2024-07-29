@@ -6,7 +6,9 @@ function compileShader(gl, shaderSource, shaderType) {
     const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
 
     if (!success) {
-        throw (`Error compiling shader: ${gl.getShaderInfoLog(shader)}`);
+        const message = gl.getShaderInfoLog(shader);
+        gl.deleteShader(shader);
+        throw (`Error compiling shader: ${message}`);
     }
    
     return shader;
@@ -20,7 +22,9 @@ function linkProgram(gl, vertexShader, fragmentShader) {
     const success = gl.getProgramParameter(program, gl.LINK_STATUS);
 
     if(!success) {
-        throw (`Error linking program: ${gl.getProgramInfoLog(program)}`);
+        const message = gl.getProgramInfoLog(program);
+        gl.deleteProgram();
+        throw (`Error linking program: ${message}`);
     }
 
     return program;

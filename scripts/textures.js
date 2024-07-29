@@ -1,5 +1,5 @@
 
-function createTexture4F(gl, width, height, data) {
+function createTexture4I(gl, width, height, data) {
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -11,22 +11,25 @@ function createTexture4F(gl, width, height, data) {
     gl.texImage2D(
         gl.TEXTURE_2D,
         0,
-        gl.RGBA16F,
+        gl.RGBA32I,
         width,
         height,
         0,
-        gl.RGBA,
-        gl.FLOAT,
+        gl.RGBA_INTEGER,
+        gl.INT,
         data
     );
 
     return texture;
 }
 
-function createFramebuffer4F(gl, texture) {
+function createFramebuffer4I(gl, texture) {
     const frameBuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT, gl.TEXTURE_2D, texture, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE;
+    console.log(status);
+    return frameBuffer;
 }
 
-export { createTexture4F, createFramebuffer4F };
+export { createTexture4I, createFramebuffer4I };

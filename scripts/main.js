@@ -21,33 +21,42 @@ const agentVertexSource = await Shaders.fetchShader("/shaders/agent.vert");
 const agentFragmentSource = await Shaders.fetchShader("/shaders/agent.frag");
 const agentProgram = Shaders.createProgram(gl, agentVertexSource, agentFragmentSource);
 
-setupWholeCanvasRectangle();
+const positionVAO = createWholeCanvasRectangle();
 
-const agentsUniformLocation = gl.getUniformLocation(agentProgram, "agents");
-const dTUniformLocation = gl.getUniformLocation(agentProgram, "dT");
+const texture1 = Textures.createTexture4I(gl, 4, 1, new Int32Array(agents));
+const frameBuffer1 = Textures.createFramebuffer4I(gl, texture1);
 
-
-const texture1 = Textures.createTexture4F(gl, 4, 1, new Float32Array(agents));
-const frameBuffer1 = Textures.createFramebuffer4F(gl, texture1);
-
-const texture2 = Textures.createTexture4F(gl, 4, 1, null);
-const frameBuffer2 = Textures.createFramebuffer4F(gl, texture2);
+const texture2 = Textures.createTexture4I(gl, 4, 1, null);
+const frameBuffer2 = Textures.createFramebuffer4I(gl, texture2);
 
 const agentsTextures = [texture1, texture2];
-const frameBuffers = [frameBuffer1, frameBuffer2];
+const framebuffers = [frameBuffer1, frameBuffer2];
 
-gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 gl.clearColor(0, 0, 0, 0);
-gl.clear(gl.COLOR_BUFFER_BIT);
 gl.useProgram(agentProgram);
-
-gl.uniform1f(dTUniformLocation, 1.0);
 
 gl.bindVertexArray(positionVAO);
 
+const dTUniformLocation = gl.getUniformLocation(agentProgram, "dT");
+gl.uniform1f(dTUniformLocation, 1.0);
+const agentsUniformLocation = gl.getUniformLocation(agentProgram, "agents");
+gl.bindTexture(gl.TEXTURE_2D, agentsTextures[0]);
+gl.uniform1i(agentsUniformLocation, gl.GL_TEXTURE0);
+
+gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[1]);
+gl.viewport(0, 0, 4, 1);
+
 gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-function setupWholeCanvasRectangle() {
+let canRead = (gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE);
+console.log(`Can read: ${canRead}`);
+
+const result = new Int32Array(4 * 4);
+gl.readPixels(0, 0, 4, 1, gl.RGBA_INTEGER, gl.INT, result);
+
+console.log(result);
+
+function createWholeCanvasRectangle() {
     const positionAttributeLocation = gl.getAttribLocation(agentProgram, "position");
 
     const positionBuffer = gl.createBuffer();
@@ -67,4 +76,7 @@ function setupWholeCanvasRectangle() {
     gl.enableVertexAttribArray(positionAttributeLocation);
     
     gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
+    return positionVAO;
 }
+
