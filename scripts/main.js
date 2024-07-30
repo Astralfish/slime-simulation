@@ -5,14 +5,18 @@ const canvas = document.querySelector("#main-canvas");
 const gl = canvas.getContext("webgl2");
 
 const agents = [
-    200, 200, 1, 0, 
-    200, 200, -1, 0,
-    200, 200, 0, 1,
-    200, 200, 0, -1,
+    200, 200, 1.5, 0, 
+    200, 200, -1.5, 0,
+    200, 200, 0, 1.5,
+    200, 200, 0, -1.5,
 ];
 
 if (!gl) {
     console.error("no webgl 2!");
+}
+
+if (!gl.getExtension('EXT_color_buffer_float')) {
+    console.error("no rendering to float textures");
 }
 
 console.log("WebGl working")
@@ -23,19 +27,17 @@ const agentProgram = Shaders.createProgram(gl, agentVertexSource, agentFragmentS
 
 const positionVAO = createWholeCanvasRectangle();
 
-const texture1 = Textures.createTexture4I(gl, 4, 1, new Int32Array(agents));
-const frameBuffer1 = Textures.createFramebuffer4I(gl, texture1);
+const texture1 = Textures.createTexture4F(gl, 4, 1, new Float32Array(agents));
+const frameBuffer1 = Textures.createFramebuffer4F(gl, texture1);
 
-const texture2 = Textures.createTexture4I(gl, 4, 1, null);
-const frameBuffer2 = Textures.createFramebuffer4I(gl, texture2);
+const texture2 = Textures.createTexture4F(gl, 4, 1, null);
+const frameBuffer2 = Textures.createFramebuffer4F(gl, texture2);
 
 const agentsTextures = [texture1, texture2];
 const framebuffers = [frameBuffer1, frameBuffer2];
 
 gl.clearColor(0, 0, 0, 0);
 gl.useProgram(agentProgram);
-
-gl.bindVertexArray(positionVAO);
 
 const dTUniformLocation = gl.getUniformLocation(agentProgram, "dT");
 gl.uniform1f(dTUniformLocation, 1.0);
@@ -48,11 +50,8 @@ gl.viewport(0, 0, 4, 1);
 
 gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-let canRead = (gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE);
-console.log(`Can read: ${canRead}`);
-
-const result = new Int32Array(4 * 4);
-gl.readPixels(0, 0, 4, 1, gl.RGBA_INTEGER, gl.INT, result);
+const result = new Float32Array(4 * 4);
+gl.readPixels(0, 0, 4, 1, gl.RGBA, gl.FLOAT, result);
 
 console.log(result);
 
