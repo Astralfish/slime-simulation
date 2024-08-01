@@ -21,9 +21,9 @@ if (!gl.getExtension('EXT_color_buffer_float')) {
 
 console.log("WebGl working")
 
-const agentVertexSource = await Shaders.fetchShader("/shaders/agent.vert");
+const identityVertexSource = await Shaders.fetchShader("/shaders/identity.vert");
 const agentFragmentSource = await Shaders.fetchShader("/shaders/agent.frag");
-const agentProgram = Shaders.createProgram(gl, agentVertexSource, agentFragmentSource);
+const agentProgram = Shaders.createProgram(gl, identityVertexSource, agentFragmentSource);
 
 const positionVAO = createWholeCanvasRectangle();
 
