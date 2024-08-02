@@ -14,10 +14,15 @@ function compileShader(gl, shaderSource, shaderType) {
     return shader;
   }
 
-function linkProgram(gl, vertexShader, fragmentShader) {
+function linkProgram(gl, vertexShader, fragmentShader, transformFeedback) {
     const program = gl.createProgram();
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
+
+    if (transformFeedback) {
+        gl.transformFeedbackVaryings(program, transformFeedback, gl.SEPARATE_ATTRIBS);
+    }
+
     gl.linkProgram(program);
     const success = gl.getProgramParameter(program, gl.LINK_STATUS);
 
