@@ -14,19 +14,19 @@ function compileShader(gl, shaderSource, shaderType) {
     return shader;
   }
 
-function linkProgram(gl, vertexShader, fragmentShader, transformFeedback) {
+function linkProgram(gl, vertexShader, fragmentShader, transformFeedbackVaryings) {
     const program = gl.createProgram();
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
 
-    if (transformFeedback) {
-        gl.transformFeedbackVaryings(program, transformFeedback, gl.SEPARATE_ATTRIBS);
+    if (transformFeedbackVaryings) {
+        gl.transformFeedbackVaryings(program, transformFeedbackVaryings, gl.SEPARATE_ATTRIBS);
     }
 
     gl.linkProgram(program);
     const success = gl.getProgramParameter(program, gl.LINK_STATUS);
 
-    if(!success) {
+    if (!success) {
         const message = gl.getProgramInfoLog(program);
         gl.deleteProgram();
         throw (`Error linking program: ${message}`);
@@ -35,10 +35,10 @@ function linkProgram(gl, vertexShader, fragmentShader, transformFeedback) {
     return program;
 }
 
-function createProgram(gl, vertexSource, fragmentSource) {
+function createProgram(gl, vertexSource, fragmentSource, transformFeedbackVaryings) {
     const vertexShader = compileShader(gl, vertexSource, gl.VERTEX_SHADER);
     const fragmentShader = compileShader(gl, fragmentSource, gl.FRAGMENT_SHADER);
-    const program = linkProgram(gl, vertexShader, fragmentShader);
+    const program = linkProgram(gl, vertexShader, fragmentShader, transformFeedbackVaryings);
     return program; 
 }
 

@@ -5,11 +5,13 @@ const canvas = document.querySelector("#main-canvas");
 const gl = canvas.getContext("webgl2");
 
 const agents = [
-    200, 200, 1.5, 0, 
-    200, 200, -1.5, 0,
-    200, 200, 0, 1.5,
-    200, 200, 0, -1.5,
+    200, 200, 0,
+    200, 200, Math.PI * 0.5,
+    200, 200, Math.PI,
+    200, 200, Math.PI * 1.5
 ];
+const numOfAgents = agents.length / 3;
+console.log(numOfAgents);
 
 if (!gl) {
     console.error("no webgl 2!");
@@ -21,37 +23,85 @@ if (!gl.getExtension('EXT_color_buffer_float')) {
 
 console.log("WebGl working")
 
-const identityVertexSource = await Shaders.fetchShader("/shaders/identity.vert");
+const agentVertexSource = await Shaders.fetchShader("/shaders/agent.vert");
 const agentFragmentSource = await Shaders.fetchShader("/shaders/agent.frag");
-const agentProgram = Shaders.createProgram(gl, identityVertexSource, agentFragmentSource);
+const agentProgram = Shaders.createProgram(gl, agentVertexSource, agentFragmentSource, ["updatedAgent"]);
 
-const positionVAO = createWholeCanvasRectangle();
+const agentVAO = gl.createVertexArray();
+gl.bindVertexArray(agentVAO);
 
-const texture1 = Textures.createTexture4F(gl, 4, 1, new Float32Array(agents));
-const frameBuffer1 = Textures.createFramebuffer4F(gl, texture1);
+const agentsBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, agentsBuffer);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(agents), gl.DYNAMIC_DRAW);
 
-const texture2 = Textures.createTexture4F(gl, 4, 1, null);
-const frameBuffer2 = Textures.createFramebuffer4F(gl, texture2);
+const agentsAttributeLocation = gl.getAttribLocation(agentProgram, "agent");
+gl.enableVertexAttribArray(agentsAttributeLocation);
+gl.vertexAttribPointer(
+    agentsAttributeLocation,
+    3,
+    gl.FLOAT,
+    false,
+    0,
+    0
+);
+gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-const agentsTextures = [texture1, texture2];
-const framebuffers = [frameBuffer1, frameBuffer2];
+const updatedAgentsBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, updatedAgentsBuffer);
+gl.bufferData(gl.ARRAY_BUFFER, agents.length * 4, gl.DYNAMIC_DRAW);
 
-gl.clearColor(0, 0, 0, 0);
+const updatedAgentsAttributeLocation = gl.getAttribLocation(agentProgram, "updatedAgent");
+gl.enableVertexAttribArray(updatedAgentsAttributeLocation);
+gl.vertexAttribPointer(
+    updatedAgentsAttributeLocation,
+    3,
+    gl.FLOAT,
+    false,
+    0,
+    0
+);
+gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+const agentTranformFeedback = gl.createTransformFeedback();
+gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, agentTranformFeedback);
+gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, updatedAgentsBuffer);
+gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, null);
+gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, null);
+
+const trailsTexture = Textures.createTexture(gl, 400, 400, 3, gl.FLOAT, new Float32Array(agents));
+gl.bindTexture(gl.TEXTURE_2D, trailsTexture);
+
+const trailsUniformLocation = gl.getUniformLocation(agentProgram, "trails");
+const dTUniformLocation = gl.getUniformLocation(agentProgram, "dT");
+const timeUniformLocation = gl.getUniformLocation(agentProgram, "time");
+const sensorSizeUniformLocation = gl.getUniformLocation(agentProgram, "sensorSize");
+const sensorAngleUniformLocation = gl.getUniformLocation(agentProgram, "sensorAngle");
+const turnAngleUniformLocation = gl.getUniformLocation(agentProgram, "turnAngle");
+const sensorDistanceUniformLocation = gl.getUniformLocation(agentProgram, "sensorDistance");
+const speedUniformLocation = gl.getUniformLocation(agentProgram, "speed");
+
 gl.useProgram(agentProgram);
 
-const dTUniformLocation = gl.getUniformLocation(agentProgram, "dT");
+gl.uniform1i(trailsUniformLocation, gl.GL_TEXTURE0);
 gl.uniform1f(dTUniformLocation, 1.0);
-const agentsUniformLocation = gl.getUniformLocation(agentProgram, "agents");
-gl.bindTexture(gl.TEXTURE_2D, agentsTextures[0]);
-gl.uniform1i(agentsUniformLocation, gl.GL_TEXTURE0);
+gl.uniform1f(timeUniformLocation, 0.0);
+gl.uniform1ui(sensorSizeUniformLocation, 1);
+gl.uniform1f(sensorAngleUniformLocation, Math.PI * 0.25);
+gl.uniform1f(turnAngleUniformLocation, Math.PI * 0.25);
+gl.uniform1f(sensorDistanceUniformLocation, 3.0);
+gl.uniform1f(speedUniformLocation, 1.0);
 
-gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[1]);
-gl.viewport(0, 0, 4, 1);
+gl.enable(gl.RASTERIZER_DISCARD);
+gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, agentTranformFeedback);
+gl.beginTransformFeedback(gl.POINTS);
+gl.drawArrays(gl.POINTS, 0, numOfAgents);
+gl.endTransformFeedback();
+gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, null);
+gl.disable(gl.RASTERIZER_DISCARD);
 
-gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-const result = new Float32Array(4 * 4);
-gl.readPixels(0, 0, 4, 1, gl.RGBA, gl.FLOAT, result);
+const result = new Float32Array(agents.length);
+gl.bindBuffer(gl.ARRAY_BUFFER, updatedAgentsBuffer);
+gl.getBufferSubData(gl.ARRAY_BUFFER, 0, result);
 
 console.log(result);
 
