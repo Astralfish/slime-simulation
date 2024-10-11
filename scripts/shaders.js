@@ -19,7 +19,7 @@ function linkProgram(gl, vertexShader, fragmentShader, transformFeedbackVaryings
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
 
-    if (transformFeedbackVaryings) {
+    if (transformFeedbackVaryings instanceof Array) {
         gl.transformFeedbackVaryings(program, transformFeedbackVaryings, gl.SEPARATE_ATTRIBS);
     }
 

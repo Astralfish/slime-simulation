@@ -27,6 +27,13 @@ const agentVertexSource = await Shaders.fetchShader("/shaders/agent.vert");
 const agentFragmentSource = await Shaders.fetchShader("/shaders/agent.frag");
 const agentProgram = Shaders.createProgram(gl, agentVertexSource, agentFragmentSource, ["updatedAgent"]);
 
+const leaveTrailVertexSource = await Shaders.fetchShader("/shaders/leaveTrail.vert");
+const leaveTrailFragmentSource = await Shaders.fetchShader("/shaders/leaveTrail.frag");
+const leaveTrailProgram = Shaders.createProgram(gl, leaveTrailVertexSource, leaveTrailFragmentSource);
+
+const drawTrailFragmentSource = await Shaders.fetchShader("/shaders/drawTrail.frag");
+const drawTrailProgram = Shaders.createProgram(gl, leaveTrailVertexSource, drawTrailFragmentSource);
+
 const agentVAO = gl.createVertexArray();
 gl.bindVertexArray(agentVAO);
 
@@ -35,6 +42,7 @@ gl.bindBuffer(gl.ARRAY_BUFFER, agentsBuffer);
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(agents), gl.DYNAMIC_DRAW);
 
 const agentsAttributeLocation = gl.getAttribLocation(agentProgram, "agent");
+console.log(agentsAttributeLocation);
 gl.enableVertexAttribArray(agentsAttributeLocation);
 gl.vertexAttribPointer(
     agentsAttributeLocation,
@@ -49,17 +57,6 @@ gl.bindBuffer(gl.ARRAY_BUFFER, null);
 const updatedAgentsBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, updatedAgentsBuffer);
 gl.bufferData(gl.ARRAY_BUFFER, agents.length * 4, gl.DYNAMIC_DRAW);
-
-const updatedAgentsAttributeLocation = gl.getAttribLocation(agentProgram, "updatedAgent");
-gl.enableVertexAttribArray(updatedAgentsAttributeLocation);
-gl.vertexAttribPointer(
-    updatedAgentsAttributeLocation,
-    3,
-    gl.FLOAT,
-    false,
-    0,
-    0
-);
 gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
 const agentTranformFeedback = gl.createTransformFeedback();
@@ -68,7 +65,7 @@ gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, updatedAgentsBuffer);
 gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, null);
 gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, null);
 
-const trailsTexture = Textures.createTexture(gl, 400, 400, 3, gl.FLOAT, new Float32Array(agents));
+const trailsTexture = Textures.createTexture(gl, 400, 400, 4, gl.FLOAT, new Float32Array(400 * 400 * 4));
 gl.bindTexture(gl.TEXTURE_2D, trailsTexture);
 
 const trailsUniformLocation = gl.getUniformLocation(agentProgram, "trails");

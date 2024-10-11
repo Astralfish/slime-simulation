@@ -16,11 +16,11 @@ function createTexture(gl, width, height, channelCount, type, data) {
     gl.texImage2D(
         gl.TEXTURE_2D,
         0,
-        internalFormats[type][channelCount],
+        internalFormats[type][channelCount - 1],
         width,
         height,
         0,
-        formats[type][channelCount],
+        formats[type][channelCount - 1],
         type,
         data
     );
@@ -44,7 +44,7 @@ function initializeFormats(gl)
         internalFormats = {};
         internalFormats[gl.FLOAT] = [gl.R32F, gl.RG32F, gl.RGB32F, gl.RGBA32F];
         internalFormats[gl.INT] = [gl.R32I, gl.RG32I, gl.RGB32I, gl.RGBA32I];
-        internalFormats[gl.UINT] = [gl.R32UI, gl.RG32UI, gl.RGB32UI, gl.RGBA32UI];
+        internalFormats[gl.UNSIGNED_INT] = [gl.R32UI, gl.RG32UI, gl.RGB32UI, gl.RGBA32UI];
     }
 
     if (!formats)
@@ -52,7 +52,7 @@ function initializeFormats(gl)
         formats = {};
         formats[gl.FLOAT] = [gl.R, gl.RG, gl.RGB, gl.RGBA];
         formats[gl.INT] = [gl.RED_INTEGER, gl.RG_INTEGER, gl.RGB_INTEGER, gl.RGBA_INTEGER];
-        formats[gl.UINT] = [gl.RED_INTEGER, gl.RG_INTEGER, gl.RGB_INTEGER, gl.RGBA_INTEGER];
+        formats[gl.UNSIGNED_INT] = [gl.RED_INTEGER, gl.RG_INTEGER, gl.RGB_INTEGER, gl.RGBA_INTEGER];
     }
 }
 
