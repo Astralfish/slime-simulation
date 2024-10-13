@@ -2,9 +2,14 @@
 
 precision highp float;
 
+uniform sampler2D trailTexture;
+uniform uvec2 viewport;
+
 out vec4 color;
 
 void main()
 {
-    color = vec4(1, 1, 1, 0);
+    vec2 uv = gl_FragCoord.xy / vec2(viewport);
+    vec4 trailValue = texture(trailTexture, uv);
+    color = vec4(trailValue.rrr, 1.1);
 }

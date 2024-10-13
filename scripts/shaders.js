@@ -14,13 +14,20 @@ function compileShader(gl, shaderSource, shaderType) {
     return shader;
   }
 
-function linkProgram(gl, vertexShader, fragmentShader, transformFeedbackVaryings) {
+function linkProgram(gl, vertexShader, fragmentShader, options = {}) {
     const program = gl.createProgram();
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
 
-    if (transformFeedbackVaryings instanceof Array) {
-        gl.transformFeedbackVaryings(program, transformFeedbackVaryings, gl.SEPARATE_ATTRIBS);
+    if (Object.hasOwn(options, "transformFeedbackVaryings") && options.transformFeedbackVaryings instanceof Array) {
+        gl.transformFeedbackVaryings(program, options.transformFeedbackVaryings, gl.SEPARATE_ATTRIBS);
+    }
+
+    if (Object.hasOwn(options, "attributeLocations") && options.attributeLocations instanceof Object) {
+        for (const [key, value] in options.attributeLocations)
+        {
+            gl.bindAttribLocation(program, value, key);
+        }
     }
 
     gl.linkProgram(program);
@@ -35,10 +42,10 @@ function linkProgram(gl, vertexShader, fragmentShader, transformFeedbackVaryings
     return program;
 }
 
-function createProgram(gl, vertexSource, fragmentSource, transformFeedbackVaryings) {
+function createProgram(gl, vertexSource, fragmentSource, options = {}) {
     const vertexShader = compileShader(gl, vertexSource, gl.VERTEX_SHADER);
     const fragmentShader = compileShader(gl, fragmentSource, gl.FRAGMENT_SHADER);
-    const program = linkProgram(gl, vertexShader, fragmentShader, transformFeedbackVaryings);
+    const program = linkProgram(gl, vertexShader, fragmentShader, options);
     return program; 
 }
 
