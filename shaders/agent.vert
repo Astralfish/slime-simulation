@@ -57,6 +57,7 @@ void main() {
     vec2 newPosition = position + movementDirection * speed * dT;
     if (isOutOfBounds(ivec2(newPosition)))
     {
+        newPosition = position;
         random = hash(random);
         float randomAngle = getRandomAngle(random);
         newOrientation = orientation + randomAngle;
