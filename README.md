@@ -8,7 +8,7 @@
 
 This project is still in progress. Things to do:
 - [ ] finish implementation of agent behavior
-- [ ] compute simulation steps and draw results in a loop
+- [x] compute simulation steps and draw results in a loop
 - [ ] trails diffusion and decay
 - [ ] drawing trails in color
 - [ ] customizable starting conditions
